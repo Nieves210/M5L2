@@ -98,7 +98,7 @@ class DB_Map():
                 lat, lng=coordinates
                 time_str = self.get_local_time(lat, lng)
                 plt.plot([lat],[lng], color= marker_color, marker="o", transform=ccrs.Geodetic(), linewidth=1)
-                plt.text(lng+3, lat+12, city, horizontalallignment="left",transform=ccrs.Geodetic)
+                plt.text(lng+3, lat+12, f"{city}\n{time_str}", fontsize=8, horizontalallignment="left",transform=ccrs.Geodetic)
         plt.savefig(path)
         plt.close()
         
