@@ -1,5 +1,6 @@
 import sqlite3
 import matplotlib
+import cartopy.feature as cfeature
 
 matplotlib.use('Agg')  # Matplotlib arka planını, pencere göstermeden dosyaları bellekte kaydetmek için ayarlama
 import matplotlib.pyplot as plt
@@ -59,14 +60,16 @@ class DB_Map():
             coordinates = cursor.fetchone()
             return coordinates  # Şehrin koordinatlarını döndürme
 
-    def create_graph(self, path, cities):
+    def create_graph(self, path, cities, marker_color):
         ax = plt.axes(projection=ccrs.PlateCarree())
         ax.stock_img()
+        ax.add_feature(cfeature.LAND, facecolor='lightgreen')
+        ax.add_feature(cfeature.OCEAN, facecolor='lightblue')
         for city in cities:
             coordinates=self.get_coordinates(city)
             if coordinates:
                 lat, lng=coordinates
-                plt.plot([lat],[lng], color="red", marker="o", transform=ccrs.Geodetic(), linewidth=1)
+                plt.plot([lat],[lng], color= marker_color, marker="o", transform=ccrs.Geodetic(), linewidth=1)
                 plt.text(lng+3, lat+12, city, horizontalallignment="left",transform=ccrs.Geodetic)
         plt.savefig(path)
         plt.close()
