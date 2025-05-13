@@ -1,6 +1,10 @@
 import sqlite3
 import matplotlib
 import cartopy.feature as cfeature
+from timezonefinder import TimezoneFinder
+from datetime import datetime
+import pytz
+
 
 matplotlib.use('Agg')  # Matplotlib arka planını, pencere göstermeden dosyaları bellekte kaydetmek için ayarlama
 import matplotlib.pyplot as plt
@@ -59,6 +63,29 @@ class DB_Map():
                             WHERE city = ?''', (city_name,))
             coordinates = cursor.fetchone()
             return coordinates  # Şehrin koordinatlarını döndürme
+        
+    def get_cities_by_country(self, country_name):
+        conn = sqlite3.connect(self.database)
+        with conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT city FROM cities WHERE country = ?", (country_name,))
+            return [row[0] for row in cursor.fetchall()]
+        
+    def get_cities_by_density(self, descending=True):
+        conn = sqlite3.connect(self.database)
+        with conn:
+            cursor = conn.cursor()
+            order = "DESC" if descending else "ASC"
+            cursor.execute(f"SELECT city, population_density FROM cities ORDER BY population_density {order}")
+            return cursor.fetchall()
+
+    def get_local_time(self, lat, lng):
+        tf = TimezoneFinder()
+        tz_name = tf.timezone_at(lat=lat, lng=lng)
+        if not tz_name:
+            return "Unknown"
+        tz = pytz.timezone(tz_name)
+        return datetime.now(tz).strftime("%H:%M")
 
     def create_graph(self, path, cities, marker_color):
         ax = plt.axes(projection=ccrs.PlateCarree())
@@ -69,6 +96,7 @@ class DB_Map():
             coordinates=self.get_coordinates(city)
             if coordinates:
                 lat, lng=coordinates
+                time_str = self.get_local_time(lat, lng)
                 plt.plot([lat],[lng], color= marker_color, marker="o", transform=ccrs.Geodetic(), linewidth=1)
                 plt.text(lng+3, lat+12, city, horizontalallignment="left",transform=ccrs.Geodetic)
         plt.savefig(path)

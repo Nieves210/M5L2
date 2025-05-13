@@ -24,6 +24,22 @@ async def help_me(ctx: commands.Context):
         "!help_me - Mevcut komutların listesini alın.\n"
       "!show_city <şehir_adı>- Verilen şehri haritada görüntüleyin.\n"
        "!remember_city <şehir_adı> - Verilen şehri kaydedin.")
+    
+@bot.command()
+async def cities_in_country(ctx, *, country_name=""):
+    cities = manager.get_cities_by_country(country_name)
+    if cities:
+        await ctx.send(f"{country_name} ülkesindeki şehirler:\n" + "\n".join(cities))
+    else:
+        await ctx.send("Hiçbir şehir bulunamadı.")
+
+@bot.command()
+async def cities_by_density(ctx, order="desc"):
+    descending = order.lower() == "desc"
+    cities = manager.get_cities_by_density(descending)
+    response = "\n".join([f"{c[0]}: {c[1]}" for c in cities[:20]])
+    await ctx.send("Nüfus yoğunluğuna göre şehirler:\n" + response)
+
 
 @bot.command()
 async def show_city(ctx: commands.Context, *, city_name:str ="", marker_color:str =""):
